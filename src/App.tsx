@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { FLOWER_QUESTION_ID, LIMITS } from '../shared/questionnaire'
 import { QuestionField } from './components/QuestionField'
 import { Sprig } from './components/Sprig'
+import { TITLE_SECONDS, WrittenTitle } from './components/WrittenTitle'
 import { ThankYou } from './components/ThankYou'
 import { useQuestionnaire } from './hooks/useQuestionnaire'
 import { STEPS, TOTAL_QUESTIONS } from './utils/steps'
@@ -46,14 +47,20 @@ export default function App() {
         {step.kind === 'welcome' && (
           <div>
             <Sprig className="w-28 text-sage" />
-            <h1 className="rise mt-8 font-serif text-5xl leading-[1.1] sm:text-6xl">Little Things About You</h1>
-            <p className="rise rise-2 mt-5 font-serif text-xl italic leading-relaxed text-ink-soft">
+            <WrittenTitle className="mt-8 max-w-[34rem] text-ink" />
+            <p
+              className="rise mt-5 font-serif text-xl italic leading-relaxed text-ink-soft"
+              style={{ animationDelay: `${TITLE_SECONDS - 0.6}s` }}
+            >
               A little space para mas makilala pa kita, one conversation at a time.
             </p>
-            <p className="rise rise-3 mt-8 max-w-md leading-relaxed text-ink-soft">
+            <p
+              className="rise mt-8 max-w-md leading-relaxed text-ink-soft"
+              style={{ animationDelay: `${TITLE_SECONDS - 0.1}s` }}
+            >
               No pressure naman, sagot ka lang kung ano yung comfy ka i-share. Gusto lang kitang makilala pa, little by little.
             </p>
-            <div className="rise rise-4 mt-10">
+            <div className="rise mt-10" style={{ animationDelay: `${TITLE_SECONDS + 0.4}s` }}>
               <label htmlFor="name" className="text-sm text-ink-soft">
                 What should I call you?
               </label>
