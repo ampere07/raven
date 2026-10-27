@@ -8,9 +8,9 @@ export const allowLeaving = () => {
   leaving = true
 }
 
-// Browsers only let a page show their own generic "leave site?" box when a tab is closed, with no custom text or
-// picture. So the browser's box is requested for real closes, and the page's own message is shown when the
-// pointer heads for the top of the window (where the tab's close button is).
+// A page cannot see a click on the browser's own close button. All it is told is that it is about to be closed, so
+// that is the moment the browser's generic "leave site?" box is requested. That box cannot carry custom words or a
+// picture, so the page's own message is queued behind it and appears if the visitor chooses to stay.
 export function ExitGuard() {
   const [open, setOpen] = useState(false)
   const stay = useRef<HTMLButtonElement>(null)
@@ -20,16 +20,10 @@ export function ExitGuard() {
       if (leaving) return
       event.preventDefault()
       event.returnValue = ''
-    }
-    const exitIntent = (event: MouseEvent) => {
-      if (!leaving && !event.relatedTarget && event.clientY <= 0) setOpen(true)
+      setOpen(true)
     }
     window.addEventListener('beforeunload', warn)
-    document.addEventListener('mouseout', exitIntent)
-    return () => {
-      window.removeEventListener('beforeunload', warn)
-      document.removeEventListener('mouseout', exitIntent)
-    }
+    return () => window.removeEventListener('beforeunload', warn)
   }, [])
 
   useEffect(() => {
