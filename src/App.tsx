@@ -123,7 +123,7 @@ export default function App() {
 
 function Shell({ children, progress }: { children: React.ReactNode; progress?: number }) {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="relative z-10 flex min-h-dvh flex-col">
       <div className="h-0.5 w-full bg-line/60" aria-hidden>
         <div
           className="h-full bg-rose transition-[width] duration-700 ease-out"

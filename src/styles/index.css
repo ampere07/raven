@@ -93,6 +93,29 @@ body {
     dot-in 0.6s ease-out calc(var(--delay) + var(--duration)) forwards;
 }
 
+@keyframes petal-fall {
+  from { transform: translate3d(0, -12vh, 0); }
+  to { transform: translate3d(0, 112vh, 0); }
+}
+
+@keyframes petal-sway {
+  0%, 100% { transform: translateX(calc(var(--drift) * -1)) rotate(-35deg); }
+  50% { transform: translateX(var(--drift)) rotate(45deg); }
+}
+
+.petal {
+  position: absolute;
+  top: 0;
+  left: var(--left);
+  will-change: transform;
+  animation: petal-fall var(--fall) linear var(--delay) infinite;
+}
+
+.petal > svg {
+  display: block;
+  animation: petal-sway var(--sway) ease-in-out var(--delay) infinite;
+}
+
 /* Only the sliding is switched off. The slow line-drawing of the flower and sprig stays on: it is the point of
    the page, and a stroke being traced has no travelling motion that reduced-motion settings exist to avoid. */
 @media (prefers-reduced-motion: reduce) {
