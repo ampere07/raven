@@ -1,7 +1,6 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { useEffect, useRef } from 'react'
-import { COMMON_ROOM_COPY, type CommonRoomQuestion, type StoredAnswer } from '../../../shared/commonRoom'
-import { AnswerForm } from './AnswerForm'
+import { useEffect, useId, useRef } from 'react'
+import { ANSWER_LIMIT, COMMON_ROOM_COPY, type CommonRoomQuestion } from '../../../shared/commonRoom'
 import { FollowUpPrompt } from './FollowUpPrompt'
 import { inkButton, primaryButton } from './ui'
 
@@ -9,31 +8,25 @@ type Props = {
   question: CommonRoomQuestion
   number: number
   total: number
-  saved?: StoredAnswer
   draft: string
-  skipped: boolean
-  revisiting: boolean
   direction: 'forward' | 'back'
   canGoBack: boolean
   onDraftChange: (text: string) => void
-  onSave: (text: string) => Promise<void>
-  onDelete: () => Promise<void>
   onPrevious: () => void
-  onSkip: () => void
   onNext: () => void
 }
 
 // One question on one page. It is remounted for every question so that each arrives as a turned page.
+// Nothing is saved here: the answers are kept in the open page and sent together at the very end.
 export function QuestionCard(props: Props) {
-  const { question, number, total, saved, draft, skipped, revisiting, direction, canGoBack } = props
+  const { question, number, total, draft, direction, canGoBack } = props
   const heading = useRef<HTMLHeadingElement>(null)
+  const fieldId = useId()
 
   // Move keyboard and screen reader focus to the new question without popping up a phone keyboard.
   useEffect(() => {
     heading.current?.focus({ preventScroll: true })
   }, [])
-
-  const settled = (saved !== undefined && draft.trim() === saved.answer) || skipped
 
   return (
     <div className="cr-turn">
@@ -47,8 +40,7 @@ export function QuestionCard(props: Props) {
           Chapter {COMMON_ROOM_COPY.number}: {COMMON_ROOM_COPY.title}
         </p>
         <p className="mt-1 font-book text-lg italic text-leather-soft">
-          Question {number} of {total}.
-          {revisiting && <span className="ml-2 text-forest">Revisiting the unanswered ones.</span>}
+          Tanong {number} sa {total}.
         </p>
 
         <h2
@@ -60,13 +52,21 @@ export function QuestionCard(props: Props) {
           {question.text}
         </h2>
 
-        <AnswerForm
-          saved={saved}
-          draft={draft}
-          onDraftChange={props.onDraftChange}
-          onSave={props.onSave}
-          onDelete={props.onDelete}
+        <label htmlFor={fieldId} className="font-book text-base uppercase tracking-[0.18em] text-leather-soft">
+          Sagot mo
+        </label>
+        <textarea
+          id={fieldId}
+          rows={4}
+          maxLength={ANSWER_LIMIT}
+          value={draft}
+          onChange={(event) => props.onDraftChange(event.target.value)}
+          placeholder="Sulat ka lang kahit konti, o i-skip mo na lang…"
+          className="mt-2 w-full resize-none rounded-sm border border-leather-soft/40 bg-parchment/50 px-3 py-2.5 font-book text-xl leading-snug text-leather transition-colors placeholder:italic placeholder:text-leather-soft/60 focus:border-burgundy focus:bg-parchment/70"
         />
+        <p aria-hidden className="mt-1 text-right font-book text-sm text-leather-soft/70">
+          {draft.length} / {ANSWER_LIMIT}
+        </p>
 
         <FollowUpPrompt key={question.id} prompt={question.followUp} />
 
@@ -74,19 +74,13 @@ export function QuestionCard(props: Props) {
           <div>
             {canGoBack && (
               <button type="button" onClick={props.onPrevious} className={inkButton}>
-                <ArrowLeft aria-hidden size={16} /> Previous Question
+                <ArrowLeft aria-hidden size={16} /> Balik
               </button>
             )}
           </div>
-          {settled ? (
-            <button type="button" onClick={props.onNext} className={primaryButton}>
-              Next Question <ArrowRight aria-hidden size={16} />
-            </button>
-          ) : (
-            <button type="button" onClick={props.onSkip} className={inkButton}>
-              Skip for Now
-            </button>
-          )}
+          <button type="button" onClick={props.onNext} className={primaryButton}>
+            Susunod <ArrowRight aria-hidden size={16} />
+          </button>
         </div>
       </article>
     </div>

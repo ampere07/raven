@@ -23,16 +23,16 @@ export function CommonRoomIntroduction({ load, onEnter, onRetry }: Props) {
       <div className="mt-9">
         {load.status === 'error' ? (
           <div role="alert" className="mx-auto max-w-sm rounded-sm border border-burgundy/50 bg-burgundy/10 px-4 py-3 text-burgundy">
-            <p className="font-book text-lg leading-snug">The book would not open. {load.message}</p>
+            <p className="font-book text-lg leading-snug">Hindi mabuksan yung libro. {load.message}</p>
             <button type="button" onClick={onRetry} className={`${inkButton} mt-3 !py-1.5`}>
-              <RotateCw aria-hidden size={15} /> Try again
+              <RotateCw aria-hidden size={15} /> Subukan ulit
             </button>
           </div>
         ) : (
           <button type="button" onClick={onEnter} disabled={load.status !== 'ready'} className={`${primaryButton} !px-8 !py-3`}>
             {load.status === 'loading' ? (
               <>
-                <Loader2 aria-hidden size={18} className="animate-spin" /> Opening the book…
+                <Loader2 aria-hidden size={18} className="animate-spin" /> Binubuksan yung libro…
               </>
             ) : (
               <>

@@ -12,95 +12,144 @@ export type CommonRoomQuestion = {
 export const COMMON_ROOM_COPY = {
   number: 'II',
   title: 'The Common Room',
-  subtitle: 'Every person has a little world of their own. Let’s discover yours.',
+  subtitle: 'Lahat tayo may sariling mundo. Gusto kong malaman yung sa’yo.',
   introduction:
-    'Some things are better discovered one conversation at a time. These are little questions about the things you enjoy, the things that make you laugh, and the little details that make you, you.',
-  enter: 'Enter the Common Room',
+    '',
+  enter: 'Proceed',
   privacy:
-    'Every question is optional. What you write is saved so that I can read it, and no one else can. You can change or delete any answer whenever you like. Your answers stay linked to this browser, so you will find them again here.',
-  moreMagic: 'A Little More Magic',
-  completeTitle: 'You have explored the Common Room.',
-  completeSubtitle: 'Every little detail is another piece of someone’s story.',
+    'Hindi mo kailangang sagutin lahat, skip mo lang if dika comfy sagutin.',
+  moreMagic: 'Extra details lang ',
+  completeTitle: 'Thankyou sa cooperation.',
+  completeSubtitle: 'Mahalaga sakin kahit yung mga maliliit na detalye.',
+
+  // The Quidditch game after the seventh question. None of this is stored either.
+  snitch: {
+    title: 'Golden Snitch!',
+    guidance: 'May Golden Snitch! I-tap mo siya para mahuli. Sampu ang kailangan mo.',
+    heroName: 'Raven',
+    // Said after they catch the last one together. Same shape as the finale: his line, her reply, his answer.
+    conversation: [
+      {
+        say: 'Ay sige, ipapaubaya ko na. Ikaw naman yan.',
+        choices: [
+          { label: 'Ha? Anong ibig mong sabihin?', answer: 'Wala, wala. Sabay naman nating nahuli, diba?' },
+          { label: 'Sabay tayong nakahuli, ah.', answer: 'Oo nga. Pero sa’yo na lang. Ikaw naman yan.' },
+        ],
+      },
+      { say: 'Tuloy na tayo? Marami pa akong gustong malaman sa’yo.' },
+    ],
+  },
 
   // The villain and the scene after the last question. None of this is stored.
   villainName: 'Voldemort',
-  villainDefeatLine: 'I will come back.',
+  villainDefeatLine: 'Ill be back.',
   finale: {
-    villainLine: 'I told you I would come back.',
+    villainLine: 'I told you, I will be back.',
     heroName: 'Raven',
-    askLine: 'Are you okay?',
-    replies: [
-      { label: 'Yes, I’m okay', answer: 'Good. You’re safe now.' },
-      { label: 'A little scared', answer: 'It’s okay. I’ve got you.' },
+    // After the rescue she and Raven talk. Each beat is one of his lines; if it has choices she picks a reply and he
+    // answers it before the next beat. Nothing she picks is stored.
+    conversation: [
+      {
+        say: 'Are you okay?',
+        choices: [
+          { label: 'Yes, Im fine', answer: 'Good. Your safe now.' },
+          { label: 'I was a bit scared', answer: 'Its okay. Im here now.' },
+        ],
+      },
+      { say: 'I wont let him hurt you. Not now, not ever.' },
+      {
+        say: 'I saw him coming back, so I ran to you.',
+        choices: [
+          { label: 'Why did you save me?', answer: 'Because you’re the one I don’t want to lose.' },
+          { label: 'Thanks, ha.', answer: 'No problem. I would do it again for you.' },
+        ],
+      },
+      {
+        say: 'If he tries to come back, Ill face him again. Just stay by my side.',
+        choices: [
+          { label: 'Ill stay right here', answer: 'Yan na nga yung gusto kong marinig.' },
+          { label: 'Ill go with you', answer: 'Kaya ko lahat basta kasama kita.' },
+        ],
+      },
+      { say: 'Lets go. I want to know more about you.' },
     ],
   },
 } as const
 
+export type FinaleBeat = {
+  say: string
+  choices?: readonly { label: string; answer: string }[]
+}
+
 export const COMMON_ROOM_QUESTIONS: readonly CommonRoomQuestion[] = [
   {
     id: 'ideal-weekend',
-    text: 'What does your ideal weekend look like?',
-    followUp: 'Would you rather spend it somewhere new or somewhere familiar?',
+    text: 'Ano yung perfect weekend para sa’yo?',
+    followUp: 'Mas gusto mo ba sa bagong place o sa lugar na kilala mo na?',
   },
   {
     id: 'humor',
-    text: 'What kind of humor makes you laugh the hardest?',
-    followUp: 'What is the funniest thing that happened to you recently?',
+    text: 'Anong klaseng jokes yung pinaka-nakakatawa para sa’yo?',
+    followUp: 'Ano yung pinakanakakatawang nangyari sa’yo recently?',
   },
   {
     id: 'first-impression',
-    text: 'What kind of person usually catches your attention, even before you get to know them?',
-    followUp: 'Is it something in how they carry themselves, or more in their energy?',
+    text: 'Anong klaseng tao yung agad nakakakuha ng attention mo, kahit hindi mo pa siya kilala?',
+    followUp: 'Sa itsura ba, sa kilos, o sa vibes niya?',
   },
   {
     id: 'spontaneous-or-routine',
-    text: 'Do you enjoy spontaneous adventures or comfortable routines more?',
-    followUp: 'Is there a small routine you would never give up?',
+    text: 'Mas gusto mo ba yung biglaang lakad o yung comfy na routine?',
+    followUp: 'May routine ka bang ayaw mong mawala?',
   },
   {
     id: 'hobby-to-try',
-    text: 'What hobby have you always wanted to try?',
-    followUp: 'What has stopped you from trying it so far?',
+    text: 'Anong hobby yung gusto mo nang subukan dati pa?',
+    followUp: 'Ano bang pumipigil sa’yo na subukan?',
   },
   {
     id: 'talk-for-hours',
-    text: 'What is something you can talk about for hours without getting bored?',
-    followUp: 'How did you first fall in love with it?',
+    text: 'Ano yung kaya mong pag-usapan nang ilang oras na hindi ka nagsasawa?',
+    followUp: 'Paano ka ba nahilig doon?',
   },
   {
     id: 'slowly-liking',
-    text: 'What little things can someone do that make you slowly start liking them?',
-    followUp: 'Is there one small gesture you still remember?',
+    text: 'Anong maliliit na bagay yung pwedeng gawin ng isang tao para unti-unti mo siyang magustuhan?',
+    followUp: 'May isang simpleng ginawa ba na hindi mo malimutan?',
   },
   {
     id: 'surprising-fact',
-    text: 'What is something people would be surprised to learn about you?',
-    followUp: 'Is there a story behind it you would enjoy telling someday?',
+    text: 'Ano yung bagay about sa’yo na ikagugulat ng mga tao?',
+    followUp: 'May kwento ba sa likod niyan na gusto mong ikwento someday?',
   },
   {
     id: 'guilty-pleasure',
-    text: 'What is your guilty pleasure?',
-    followUp: 'Is there a favorite way to enjoy it, like a time, a place, or a snack to go with it?',
+    text: 'Ano yung guilty pleasure mo?',
+    followUp: 'May paborito ka bang paraan para i-enjoy yun, parang may time, lugar, o food na kasama?',
   },
   {
     id: 'free-day',
-    text: 'If you could spend a whole day doing anything, with no responsibilities, what would you do?',
-    followUp: 'Would you rather spend that day alone or with people you enjoy being around?',
+    text: 'Kung may isang buong araw ka na walang responsibilidad, ano yung gagawin mo?',
+    followUp: 'Mag-isa ka ba o kasama yung mga taong gusto mo?',
   },
   {
     id: 'group-size',
-    text: 'Are you more comfortable in a small group or a big crowd?',
-    followUp: 'What makes a gathering feel comfortable for you?',
+    text: 'Mas comfy ka ba sa small group o sa maraming tao?',
+    followUp: 'Ano yung nagpapagaan ng pakiramdam mo sa isang hangout?',
   },
   {
     id: 'your-type',
-    text: 'If you had to describe your type in three words, what would they be?',
-    followUp: 'Which of those three words matters most to you?',
+    text: 'Kung ide-describe mo yung type mo in three words, ano yun?',
+    followUp: 'Alin sa tatlong yun yung pinaka-importante sa’yo?',
   },
 ]
 
 /** The villain waits right after this question. It is named by id, so reordering questions keeps it in place. */
 export const VILLAIN_AFTER_QUESTION = 'humor'
+
+// The Quidditch game stands between this question and the next, and she has to catch this many snitches.
+export const SNITCH_AFTER_QUESTION = 'slowly-liking'
+export const SNITCH_TARGET = 10
 
 export const QUESTION_IDS: ReadonlySet<string> = new Set(COMMON_ROOM_QUESTIONS.map((question) => question.id))
 
@@ -132,9 +181,9 @@ export function isStoredAnswer(value: unknown): value is StoredAnswer {
 export type AnswerCheck = { ok: true; answer: string } | { ok: false; error: string }
 
 export function checkAnswerText(input: unknown): AnswerCheck {
-  if (typeof input !== 'string') return { ok: false, error: 'The answer could not be read.' }
+  if (typeof input !== 'string') return { ok: false, error: 'Hindi mabasa yung sagot.' }
   const answer = input.trim()
-  if (!answer) return { ok: false, error: 'An answer cannot be empty. Delete it instead.' }
-  if (answer.length > ANSWER_LIMIT) return { ok: false, error: `An answer can be up to ${ANSWER_LIMIT} characters.` }
+  if (!answer) return { ok: false, error: 'Hindi pwedeng walang laman. Burahin mo na lang.' }
+  if (answer.length > ANSWER_LIMIT) return { ok: false, error: `Hanggang ${ANSWER_LIMIT} characters lang yung sagot.` }
   return { ok: true, answer }
 }

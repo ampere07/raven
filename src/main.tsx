@@ -15,7 +15,7 @@ function Root() {
 
   return (
     <>
-      {route === 'home' && (
+      {route === 'little-things' && (
         <>
           <PetalRain />
           <App />
@@ -23,7 +23,7 @@ function Root() {
       )}
       {route === 'chapters' && <ChapterListPage />}
       {route === 'common-room' && <CommonRoomPage />}
-      <MusicPlayer />
+      <MusicPlayer route={route} />
       <ExitGuard />
     </>
   )

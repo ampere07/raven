@@ -1,6 +1,8 @@
 import { ArrowRight } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
-import { COMMON_ROOM_COPY } from '../../../shared/commonRoom'
+import { COMMON_ROOM_COPY, type FinaleBeat } from '../../../shared/commonRoom'
+import handTheme from '../../hand.mp3'
+import { setSceneTrack } from '../../utils/sceneMusic'
 import { DarkLord } from './DarkLord'
 import { SpeechBubble } from './SpeechBubble'
 import { Stickman } from './Stickman'
@@ -18,12 +20,12 @@ const SCHEDULE: readonly (readonly [Phase, number])[] = [
 ]
 
 const NARRATION: Record<Phase, string> = {
-  appear: `${COMMON_ROOM_COPY.villainName} has come back.`,
-  charge: 'He is charging a powerful spell.',
-  throw: 'He throws it straight at you!',
-  pause: 'Time seems to stop.',
-  save: `A stick figure named ${COMMON_ROOM_COPY.finale.heroName} leaps in front of you and blocks the spell.`,
-  ask: `${COMMON_ROOM_COPY.finale.heroName} turns to you.`,
+  appear: `Bumalik si ${COMMON_ROOM_COPY.villainName}.`,
+  charge: 'Nagcha-charge siya ng malakas na spell.',
+  throw: 'Binato niya ’to diretso sa’yo!',
+  pause: 'Parang huminto yung oras.',
+  save: `Si ${COMMON_ROOM_COPY.finale.heroName}, isang stick figure, tumalon sa harap mo at hinarang yung spell.`,
+  ask: `Humarap sa’yo si ${COMMON_ROOM_COPY.finale.heroName}.`,
 }
 
 const TIP = { x: 225, y: 78 } as const
@@ -45,7 +47,8 @@ type Props = { onFinished: () => void }
 export function ReturnScene({ onFinished }: Props) {
   const [phase, setPhase] = useState<Phase>('appear')
   const [shown, setShown] = useState(false)
-  const [reply, setReply] = useState<number | null>(null)
+  const [beat, setBeat] = useState(0)
+  const [picked, setPicked] = useState<number | null>(null)
   const calm = prefersReducedMotion()
 
   useEffect(() => {
@@ -56,6 +59,12 @@ export function ReturnScene({ onFinished }: Props) {
       timers.forEach((id) => window.clearTimeout(id))
     }
   }, [])
+
+  // The moment Raven steps in front of her, the chapter's music gives way to hand.mp3. The page hands it back when
+  // she leaves the chapter.
+  useEffect(() => {
+    if (phase === 'save') setSceneTrack(handTheme)
+  }, [phase])
 
   const move = (duration: string, curve = 'ease') =>
     calm ? 'opacity 0.4s ease' : `transform ${duration} ${curve}, opacity ${duration} ${curve}`
@@ -84,12 +93,21 @@ export function ReturnScene({ onFinished }: Props) {
       : { transform: 'translate(-260px, 0px)' }
 
   const rumbling = phase === 'charge' || phase === 'throw'
-  const answered = reply !== null
+  const talk = COMMON_ROOM_COPY.finale.conversation as readonly FinaleBeat[]
+  const current = talk[beat]
+  const chosen = picked !== null ? current.choices?.[picked] : undefined
+  const lastBeat = beat === talk.length - 1
+  const waitingForChoice = Boolean(current.choices) && picked === null
+  const advance = () => {
+    if (lastBeat) return onFinished()
+    setBeat(beat + 1)
+    setPicked(null)
+  }
 
   return (
     <section aria-labelledby="finale-title" className="cr-parchment cr-unfurl px-5 py-8 text-center sm:px-10 sm:py-12">
       <h2 id="finale-title" className="sr-only">
-        {COMMON_ROOM_COPY.villainName} returns
+        Bumalik si {COMMON_ROOM_COPY.villainName}
       </h2>
       <p className="sr-only" role="status" aria-live="polite">
         {NARRATION[phase]}
@@ -215,38 +233,43 @@ export function ReturnScene({ onFinished }: Props) {
             {COMMON_ROOM_COPY.finale.villainLine}
           </SpeechBubble>
         )}
-
-        {(phase === 'ask' || answered) && (
-          <SpeechBubble
-            name={COMMON_ROOM_COPY.finale.heroName}
-            tail="down"
-            className="cr-fade absolute left-1/2 top-[36%] w-[82%] -translate-x-1/2"
-          >
-            {answered ? COMMON_ROOM_COPY.finale.replies[reply].answer : COMMON_ROOM_COPY.finale.askLine}
-          </SpeechBubble>
-        )}
       </div>
 
-      <div className="mt-6 flex flex-col items-center gap-3">
-        {phase === 'ask' && !answered && (
-          <div className="cr-fade flex flex-wrap justify-center gap-3">
-            {COMMON_ROOM_COPY.finale.replies.map((option, index) => (
-              <button key={option.label} type="button" onClick={() => setReply(index)} className={primaryButton}>
-                {option.label}
-              </button>
-            ))}
-          </div>
-        )}
-        {answered && (
-          <button type="button" onClick={onFinished} className={`${primaryButton} cr-fade !px-8`} autoFocus>
-            Continue <ArrowRight aria-hidden size={16} />
-          </button>
-        )}
-        {!answered && (
-          <button type="button" onClick={onFinished} className={textButton}>
-            Skip this scene
-          </button>
-        )}
+      {phase === 'ask' && (
+        <div className="mt-6 flex flex-col items-center gap-3">
+          {chosen && (
+            <p key={`you-${beat}`} className="cr-fade font-book text-lg italic text-leather-soft">
+              Ikaw: “{chosen.label}”
+            </p>
+          )}
+          <SpeechBubble
+            key={`${beat}-${picked}`}
+            name={COMMON_ROOM_COPY.finale.heroName}
+            className="cr-fade w-full max-w-xs"
+          >
+            {chosen ? chosen.answer : current.say}
+          </SpeechBubble>
+
+          {waitingForChoice ? (
+            <div className="cr-fade flex flex-wrap justify-center gap-3">
+              {current.choices?.map((option, index) => (
+                <button key={option.label} type="button" onClick={() => setPicked(index)} className={primaryButton}>
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <button type="button" onClick={advance} className={`${primaryButton} cr-fade !px-8`} autoFocus>
+              {lastBeat ? 'Tuloy' : 'Susunod'} <ArrowRight aria-hidden size={16} />
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4 flex justify-center">
+        <button type="button" onClick={onFinished} className={textButton}>
+          Skip na lang ’to
+        </button>
       </div>
     </section>
   )

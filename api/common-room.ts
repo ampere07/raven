@@ -13,7 +13,7 @@ function ownerOf(request: Request): string | null {
 
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
 
-const denied = () => json({ error: 'This browser is not allowed to do that.' }, 401)
+const denied = () => json({ error: 'Hindi pinapayagan ng browser na ’to.' }, 401)
 
 const present = (doc: WithId<CommonRoomAnswerDocument>): StoredAnswer => ({
   id: doc._id.toHexString(),
@@ -23,9 +23,15 @@ const present = (doc: WithId<CommonRoomAnswerDocument>): StoredAnswer => ({
   updatedAt: doc.updatedAt.toISOString(),
 })
 
-const unavailable = (action: string, error: unknown) => {
-  console.error(`Common Room: ${action} failed:`, error)
-  return json({ error: `The answers could not be ${action} just now. Please try again in a moment.` }, 503)
+const UNAVAILABLE = {
+  load: 'Hindi ma-load yung mga sagot ngayon. Subukan mo ulit mamaya.',
+  save: 'Hindi na-save yung sagot ngayon. Subukan mo ulit mamaya.',
+  delete: 'Hindi nabura yung sagot ngayon. Subukan mo ulit mamaya.',
+} as const
+
+const unavailable = (action: keyof typeof UNAVAILABLE, error: unknown) => {
+  console.error(`Common Room: could not ${action}:`, error)
+  return json({ error: UNAVAILABLE[action] }, 503)
 }
 
 export async function GET(request: Request): Promise<Response> {
@@ -37,7 +43,7 @@ export async function GET(request: Request): Promise<Response> {
     const documents = await answers.find({ ownerId }).toArray()
     return json({ answers: documents.map(present) })
   } catch (error) {
-    return unavailable('loaded', error)
+    return unavailable('load', error)
   }
 }
 
@@ -46,16 +52,16 @@ export async function PUT(request: Request): Promise<Response> {
   if (!ownerId) return denied()
 
   const body = await request.text()
-  if (body.length > REQUEST_LIMIT) return json({ error: 'That was a little too long to save.' }, 413)
+  if (body.length > REQUEST_LIMIT) return json({ error: 'Masyadong mahaba para ma-save.' }, 413)
 
   let payload: unknown
   try {
     payload = JSON.parse(body)
   } catch {
-    return json({ error: 'The answer could not be read.' }, 400)
+    return json({ error: 'Hindi mabasa yung sagot.' }, 400)
   }
   if (!isRecord(payload) || typeof payload.questionId !== 'string' || !QUESTION_IDS.has(payload.questionId)) {
-    return json({ error: 'That question does not exist.' }, 400)
+    return json({ error: 'Walang ganyang tanong.' }, 400)
   }
   const checked = checkAnswerText(payload.answer)
   if (!checked.ok) return json({ error: checked.error }, 400)
@@ -85,7 +91,7 @@ export async function PUT(request: Request): Promise<Response> {
     if (!stored) throw new Error('The write returned no document')
     return json({ answer: present(stored) })
   } catch (error) {
-    return unavailable('saved', error)
+    return unavailable('save', error)
   }
 }
 
@@ -94,13 +100,13 @@ export async function DELETE(request: Request): Promise<Response> {
   if (!ownerId) return denied()
 
   const questionId = new URL(request.url).searchParams.get('questionId')
-  if (!questionId || !QUESTION_IDS.has(questionId)) return json({ error: 'That question does not exist.' }, 400)
+  if (!questionId || !QUESTION_IDS.has(questionId)) return json({ error: 'Walang ganyang tanong.' }, 400)
 
   try {
     const answers = await getCommonRoomAnswers()
     const { deletedCount } = await answers.deleteOne({ ownerId, questionId })
     return json({ deleted: deletedCount })
   } catch (error) {
-    return unavailable('deleted', error)
+    return unavailable('delete', error)
   }
 }

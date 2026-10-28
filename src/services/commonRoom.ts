@@ -12,8 +12,8 @@ export class CommonRoomError extends Error {
   }
 }
 
-const NETWORK = "Couldn't reach the server. Check your connection and try again."
-const MALFORMED = 'The server sent something unexpected. Please try again.'
+const NETWORK = 'Hindi maabot yung server. Check mo yung internet mo tapos subukan ulit.'
+const MALFORMED = 'Weird yung sagot ng server. Subukan ulit.'
 
 function messageFrom(body: unknown): string | undefined {
   return typeof body === 'object' && body !== null && 'error' in body && typeof body.error === 'string'
@@ -34,7 +34,7 @@ async function request(path: string, init: { method: 'GET' | 'PUT' | 'DELETE'; b
   }
 
   const body: unknown = await response.json().catch(() => undefined)
-  if (!response.ok) throw new CommonRoomError(messageFrom(body) ?? 'Something went wrong. Please try again.', 'server')
+  if (!response.ok) throw new CommonRoomError(messageFrom(body) ?? 'May nangyaring mali. Subukan ulit.', 'server')
   if (body === undefined) throw new CommonRoomError(MALFORMED, 'malformed')
   return body
 }

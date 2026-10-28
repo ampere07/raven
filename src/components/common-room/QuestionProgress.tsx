@@ -13,9 +13,9 @@ export function QuestionProgress({ questions, answered, index, onJump }: Props) 
   const total = questions.length
 
   return (
-    <nav aria-label="Pages of the chapter" className="mb-5">
+    <nav aria-label="Mga page ng chapter" className="mb-5">
       <p className="mb-2 flex justify-between font-book text-base tracking-wide text-gold-soft/90">
-        <span>Page {index + 1} of {total}</span>
+        <span>Page {index + 1} sa {total}</span>
       </p>
 
       <div className="h-2.5 w-full rounded-sm bg-black/45 ring-1 ring-gold/25" aria-hidden>
@@ -32,7 +32,7 @@ export function QuestionProgress({ questions, answered, index, onJump }: Props) 
                 type="button"
                 onClick={() => onJump(i)}
                 aria-current={current ? 'step' : undefined}
-                aria-label={`Question ${i + 1}, ${done ? 'answered' : 'not answered yet'}`}
+                aria-label={`Tanong ${i + 1}, ${done ? 'may sagot na' : 'wala pang sagot'}`}
                 className="group flex size-7 items-center justify-center"
               >
                 <span

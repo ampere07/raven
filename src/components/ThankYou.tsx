@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { splitChoices } from '../../shared/questionnaire'
+import { hrefFor } from '../utils/route'
 import { allowLeaving } from './ExitGuard'
 import { drawingSeconds, FlowerDrawing } from './FlowerDrawing'
 import { Sprig } from './Sprig'
@@ -30,13 +31,21 @@ export function ThankYou({ flowers }: { flowers?: string }) {
       </p>
 
       {ready && (
-        <a
-          href={MESSENGER_URL}
-          onClick={allowLeaving}
-          className="rise mt-10 inline-flex items-center gap-2 rounded-full bg-rose px-7 py-3 text-white transition-colors hover:bg-rose-deep"
-        >
-          Next <ArrowRight aria-hidden size={16} />
-        </a>
+        <div className="rise mt-10 flex flex-col items-center gap-4">
+          <a
+            href={MESSENGER_URL}
+            onClick={allowLeaving}
+            className="inline-flex items-center gap-2 rounded-full bg-rose px-7 py-3 text-white transition-colors hover:bg-rose-deep"
+          >
+            Next <ArrowRight aria-hidden size={16} />
+          </a>
+          <a
+            href={hrefFor('common-room')}
+            className="text-sm text-rose-deep underline underline-offset-4 transition-colors hover:text-ink"
+          >
+            Chapter II: The Common Room
+          </a>
+        </div>
       )}
     </section>
   )

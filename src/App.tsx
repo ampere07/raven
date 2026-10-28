@@ -6,6 +6,7 @@ import { Sprig } from './components/Sprig'
 import { TITLE_SECONDS, WrittenTitle } from './components/WrittenTitle'
 import { ThankYou } from './components/ThankYou'
 import { useQuestionnaire } from './hooks/useQuestionnaire'
+import { hrefFor } from './utils/route'
 import { STEPS, TOTAL_QUESTIONS } from './utils/steps'
 
 type Direction = 'forward' | 'back'
@@ -97,7 +98,12 @@ export default function App() {
 
       <nav className="mt-12 flex items-center justify-between">
         {step.kind === 'welcome' ? (
-          <span />
+          <a
+            href={hrefFor('chapters')}
+            className="py-2.5 text-sm text-ink-soft underline decoration-line underline-offset-4 transition-colors hover:text-ink"
+          >
+            Chapters
+          </a>
         ) : (
           <button
             type="button"

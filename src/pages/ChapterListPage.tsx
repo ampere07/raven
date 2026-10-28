@@ -1,49 +1,72 @@
+import { ArrowRight } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import { COMMON_ROOM_COPY } from '../../shared/commonRoom'
-import { Flourish } from '../components/common-room/Flourish'
-import { Stage } from '../components/common-room/Stage'
+import { Paw, Pup } from '../components/dog/Pup'
 import { hrefFor } from '../utils/route'
 
 const CHAPTERS = [
   {
     number: 'I',
     title: 'The Little Things',
-    blurb: 'The first small questions: food, songs, quiet days and flowers.',
-    href: hrefFor('home'),
+    blurb: 'Yung mga unang tanong: food, kanta, chill days, at flowers.',
+    href: hrefFor('little-things'),
   },
   {
     number: COMMON_ROOM_COPY.number,
     title: COMMON_ROOM_COPY.title,
-    blurb: 'Hobbies, humor and the little worlds people carry around with them.',
+    blurb: 'Hobbies, humor, at yung mga maliliit na bagay na gusto mo.',
     href: hrefFor('common-room'),
   },
 ] as const
 
+// Paw prints trotting across the bottom: left to right, alternating up and down like real steps.
+const STEPS = Array.from({ length: 9 }, (_, i) => ({
+  x: `${6 + i * 10.5}%`,
+  y: i % 2 ? '-10px' : '6px',
+  turn: i % 2 ? '84deg' : '96deg',
+  delay: `${i * 0.55}s`,
+}))
+
 export function ChapterListPage() {
   return (
-    <Stage showChapters={false}>
-      <section aria-labelledby="chapters-title" className="cr-parchment cr-unfurl px-6 py-10 sm:px-12 sm:py-14">
-        <div className="text-center">
-          <h1 id="chapters-title" className="font-display text-4xl text-burgundy sm:text-5xl">
-            The Chapters
-          </h1>
-          <Flourish className="mx-auto mt-5 w-40 text-gold" />
-        </div>
+    <div className="dog-stage">
+      <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-xl flex-col justify-center px-5 pb-28 pt-10 sm:px-8">
+        <header className="text-center">
+          <h1 className="sr-only">Chapters</h1>
+          <Pup className="dog-bounce mx-auto w-56 sm:w-64" />
+        </header>
 
-        <ol className="mt-8 divide-y divide-leather/20">
+        <ol className="mt-9 space-y-5">
           {CHAPTERS.map((chapter) => (
             <li key={chapter.number}>
-              <a
-                href={chapter.href}
-                className="group block py-5 transition-colors hover:text-burgundy"
-              >
-                <span className="font-book text-base tracking-[0.18em] text-leather-soft">CHAPTER {chapter.number}</span>
-                <span className="mt-1 block font-display text-2xl leading-snug sm:text-3xl">{chapter.title}</span>
-                <span className="mt-1 block font-book text-lg italic text-leather-soft">{chapter.blurb}</span>
+              <a href={chapter.href} className="dog-tag py-5 pl-14 pr-5 sm:pl-16">
+                <span className="dog-tag-hole" aria-hidden />
+                <span className="flex items-center gap-4">
+                  <span className="dog-number" aria-hidden>
+                    {chapter.number}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-medium uppercase tracking-[0.18em] text-[#b27d3c]">
+                      Chapter {chapter.number}
+                    </span>
+                    <span className="dog-heading block text-2xl leading-snug">{chapter.title}</span>
+                    <span className="mt-0.5 block text-base leading-snug text-[#7a4a28]">{chapter.blurb}</span>
+                  </span>
+                  <ArrowRight aria-hidden size={22} className="flex-none text-[#d9722f]" />
+                </span>
               </a>
             </li>
           ))}
         </ol>
-      </section>
-    </Stage>
+      </main>
+
+      {STEPS.map((step, i) => (
+        <Paw
+          key={i}
+          className="dog-trail"
+          style={{ '--x': step.x, '--y': step.y, '--turn': step.turn, '--delay': step.delay } as CSSProperties}
+        />
+      ))}
+    </div>
   )
 }

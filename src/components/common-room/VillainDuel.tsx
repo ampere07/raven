@@ -18,7 +18,11 @@ import { inkButton, primaryButton, textButton } from './ui'
 type Phase = 'ready' | 'casting' | 'defeated'
 type Point = { x: number; y: number }
 
-const SPELL = 'Expelliarmus!'
+// He takes five hits. Each lands a different spell, and the last one is the classic duelling finish.
+const HEALTH = 5
+const SPELLS = ['Stupefy!', 'Impedimenta!', 'Petrificus Totalus!', 'Protego!', 'Expelliarmus!']
+// The wand is back in her hand this long after a spell leaves it.
+const RELOAD_MS = 650
 const BOLT_MS = 430
 // How long his last words stay on screen before she can move on.
 const READ_MS = 2200
@@ -30,12 +34,12 @@ const SPARKS = Array.from({ length: 12 }, (_, i) => {
 })
 
 const GUIDANCE: Record<SensorState, string> = {
-  idle: 'Drag the wand onto Voldemort to cast a spell.',
-  asking: 'Asking your phone for permission to feel its motion…',
-  checking: 'Your phone is listening too. Flick it like a wand!',
-  motion: 'Your phone is ready too. Flick your wrist!',
-  none: 'Your device is not sharing its motion. Drag the wand on screen instead.',
-  denied: 'Motion was not allowed. Drag the wand on screen instead.',
+  idle: 'I-drag mo yung wand kay Voldemort para mag-cast ng spell.',
+  asking: 'Humihingi ng permission sa phone mo para sa motion…',
+  checking: 'Nakikinig din yung phone mo. I-flick mo parang wand!',
+  motion: 'Ready na rin yung phone mo. I-flick mo yung wrist mo!',
+  none: 'Hindi nagse-share ng motion yung device mo. I-drag mo na lang yung wand sa screen.',
+  denied: 'Hindi pinayagan yung motion. I-drag mo na lang yung wand sa screen.',
 }
 
 type Props = { onDefeated: () => void; onBack: () => void }
@@ -48,6 +52,9 @@ export function VillainDuel({ onDefeated, onBack }: Props) {
   const [dragging, setDragging] = useState(false)
   const [trail, setTrail] = useState<(Point & { id: number })[]>([])
   const [mayContinue, setMayContinue] = useState(false)
+  const [hits, setHits] = useState(0)
+  const hitsRef = useRef(0)
+  const [spell, setSpell] = useState<{ id: number; name: string } | null>(null)
 
   const arena = useRef<HTMLDivElement>(null)
   const villain = useRef<HTMLDivElement>(null)
@@ -67,7 +74,8 @@ export function VillainDuel({ onDefeated, onBack }: Props) {
     timers.current.push(window.setTimeout(work, ms))
   }, [])
 
-  // One spell is all it takes. It flies from the wand (or from the bottom of the arena when cast by phone or button).
+  // Every spell that reaches him costs him some health. It flies from the wand (or from the bottom of the arena when
+  // cast by phone or button), and the wand comes back to be dragged again until he has none left.
   const cast = useCallback(
     (tip?: Point) => {
       if (phaseRef.current !== 'ready') return
@@ -90,11 +98,22 @@ export function VillainDuel({ onDefeated, onBack }: Props) {
       navigator.vibrate?.(60)
 
       later(() => {
-        phaseRef.current = 'defeated'
-        setPhase('defeated')
+        hitsRef.current += 1
+        setHits(hitsRef.current)
+        setSpell({ id: hitsRef.current, name: SPELLS[hitsRef.current - 1] })
         setBolt(null)
+
+        if (hitsRef.current >= HEALTH) {
+          phaseRef.current = 'defeated'
+          setPhase('defeated')
+          later(() => setMayContinue(true), READ_MS)
+        } else {
+          later(() => {
+            phaseRef.current = 'ready'
+            setPhase('ready')
+          }, RELOAD_MS)
+        }
       }, BOLT_MS)
-      later(() => setMayContinue(true), BOLT_MS + READ_MS)
     },
     [later],
   )
@@ -157,26 +176,55 @@ export function VillainDuel({ onDefeated, onBack }: Props) {
   }
 
   const beaten = phase === 'defeated'
+  const left = HEALTH - hits
 
   return (
     <section aria-labelledby="duel-title" className="cr-parchment cr-unfurl px-5 py-8 text-center sm:px-10 sm:py-12">
       <h2 id="duel-title" className="font-display text-3xl leading-tight text-burgundy sm:text-4xl">
-        {beaten ? `${COMMON_ROOM_COPY.villainName} is gone… for now.` : `${COMMON_ROOM_COPY.villainName} is in the room`}
+        {beaten ? `Wala na si ${COMMON_ROOM_COPY.villainName}… for now.` : `Nasa Common Room si ${COMMON_ROOM_COPY.villainName}`}
       </h2>
       <Flourish className="mx-auto mt-4 w-40 text-gold" />
       <p className="mx-auto mt-4 max-w-md font-book text-xl leading-snug text-leather-soft">
         {beaten
-          ? 'The candles burn steady again.'
-          : 'He has slipped into the Common Room and will not let you turn the page. Take up the wand and cast a spell!'}
+          ? 'Okay na ulit dito.'
+          : 'Nakapasok siya sa Common Room at ayaw ka niyang paabutin sa susunod na tanong. Kunin mo yung wand tapos paulit-ulit mo siyang i-spell hanggang maubos yung health niya!'}
       </p>
 
-      <div ref={arena} className="cr-arena relative mx-auto mt-6 h-80 w-full max-w-sm overflow-hidden rounded-sm sm:h-96">
-        <div ref={villain} className="absolute left-1/2 top-4 -translate-x-1/2">
-          {!beaten ? (
-            <DarkLord className={`h-48 w-auto sm:h-56 ${phase === 'casting' ? 'cr-villain-hit' : 'cr-villain'}`} />
-          ) : (
-            <DarkLord className="cr-villain-vanish h-48 w-auto sm:h-56" />
-          )}
+      <div ref={arena} className="cr-arena relative mx-auto mt-6 h-96 w-full max-w-sm overflow-hidden rounded-sm sm:h-[26rem]">
+        {!beaten && (
+          <div
+            className="absolute inset-x-6 top-3 z-10"
+            role="progressbar"
+            aria-label={`Health ni ${COMMON_ROOM_COPY.villainName}`}
+            aria-valuemin={0}
+            aria-valuemax={HEALTH}
+            aria-valuenow={left}
+          >
+            <p className="mb-1 flex justify-between font-book text-sm tracking-wide text-red-200/90">
+              <span>{COMMON_ROOM_COPY.villainName}</span>
+              <span aria-hidden>{left} / {HEALTH}</span>
+            </p>
+            <div className="h-2.5 overflow-hidden rounded-sm bg-black/60 ring-1 ring-red-300/40">
+              <div
+                className="h-full bg-gradient-to-r from-red-800 to-red-500 transition-[width] duration-500 ease-out"
+                style={{ width: `${(left / HEALTH) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="absolute left-1/2 top-12 -translate-x-1/2">
+          <div
+            ref={villain}
+            className={beaten ? undefined : 'cr-sway'}
+            style={{ '--sway-time': `${Math.max(1.4, 3.2 - hits * 0.45)}s` } as CSSProperties}
+          >
+            {!beaten ? (
+              <DarkLord className={`h-44 w-auto sm:h-52 ${phase === 'casting' ? 'cr-villain-hit' : 'cr-villain'}`} />
+            ) : (
+              <DarkLord className="cr-villain-vanish h-44 w-auto sm:h-52" />
+            )}
+          </div>
         </div>
 
         {beaten &&
@@ -201,9 +249,9 @@ export function VillainDuel({ onDefeated, onBack }: Props) {
           />
         )}
         {phase !== 'ready' && <span aria-hidden className="cr-flash" style={{ animationDelay: `${BOLT_MS - 40}ms` }} />}
-        {beaten && (
-          <span aria-hidden className="cr-spell">
-            {SPELL}
+        {spell && (
+          <span key={spell.id} aria-hidden className="cr-spell">
+            {spell.name}
           </span>
         )}
 
@@ -211,7 +259,7 @@ export function VillainDuel({ onDefeated, onBack }: Props) {
         <div
           role="button"
           tabIndex={0}
-          aria-label="Wand. Drag it onto Voldemort to cast a spell, or press Enter."
+          aria-label="Wand. I-drag mo kay Voldemort para mag-cast ng spell, o pindutin ang Enter."
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerEnd}
@@ -257,21 +305,21 @@ export function VillainDuel({ onDefeated, onBack }: Props) {
         {beaten ? (
           mayContinue && (
             <button type="button" onClick={onDefeated} className={`${primaryButton} cr-fade !px-8`} autoFocus>
-              Continue <ArrowRight aria-hidden size={16} />
+              Tuloy <ArrowRight aria-hidden size={16} />
             </button>
           )
         ) : (
           <>
             {(state === 'idle' || state === 'asking') && (
               <button type="button" onClick={() => void enable()} disabled={state === 'asking'} className={inkButton}>
-                <Wand2 aria-hidden size={18} /> Or wave your phone like a wand
+                <Wand2 aria-hidden size={18} /> O i-wave mo yung phone mo parang wand
               </button>
             )}
             <button type="button" onClick={() => cast()} className={textButton}>
-              Cast the spell with a tap instead
+              I-tap na lang para mag-cast
             </button>
             <button type="button" onClick={onBack} className={`${textButton} inline-flex items-center gap-2`}>
-              <ArrowLeft aria-hidden size={15} /> Back to the question
+              <ArrowLeft aria-hidden size={15} /> Balik sa tanong
             </button>
           </>
         )}

@@ -255,6 +255,16 @@
   100% { transform: translate(var(--dx), var(--dy)) scale(1.6) rotate(120deg); opacity: 0; }
 }
 
+/* He drifts from side to side, so the wand has to follow him. It gets quicker as he weakens. */
+.cr-sway {
+  animation: cr-sway var(--sway-time, 3.2s) ease-in-out infinite;
+}
+
+@keyframes cr-sway {
+  0%, 100% { transform: translateX(-34px); }
+  50% { transform: translateX(34px); }
+}
+
 /* The wand: it rises into view, bobs gently, and leaves sparks where it is dragged. */
 .cr-wand-in {
   animation: cr-wand-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -371,6 +381,7 @@
 @media (prefers-reduced-motion: reduce) {
   .cr-villain,
   .cr-villain-hit,
+  .cr-sway,
   .cr-wand-idle,
   .cr-rumble,
   .cr-trail {
@@ -384,4 +395,47 @@
 @keyframes cr-fade-only {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* The Golden Snitch game. */
+.cr-snitch-wing {
+  transform-box: fill-box;
+  animation: cr-flap 0.16s ease-in-out infinite alternate;
+}
+
+.cr-snitch-wing.left { transform-origin: right center; }
+.cr-snitch-wing.right { transform-origin: left center; animation-direction: alternate-reverse; }
+
+@keyframes cr-flap {
+  from { transform: rotate(-16deg) scaleY(1); }
+  to { transform: rotate(14deg) scaleY(0.78); }
+}
+
+/* A ring of gold where a snitch was just caught. */
+.cr-catch {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: -10px;
+  pointer-events: none;
+  border-radius: 50%;
+  border: 3px solid #ffe9a8;
+  box-shadow: 0 0 14px rgba(255, 217, 122, 0.9);
+  animation: cr-catch 0.6s ease-out both;
+}
+
+@keyframes cr-catch {
+  from { transform: scale(0.4); opacity: 1; }
+  to { transform: scale(4.2); opacity: 0; }
+}
+
+/* Raven's arm reaching out to the snitch. */
+.cr-reach {
+  stroke-dasharray: 1;
+  animation: cr-reach 0.5s ease-out both;
+}
+
+@keyframes cr-reach {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
 }

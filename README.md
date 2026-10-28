@@ -29,9 +29,8 @@ All questions live in `shared/questionnaire.ts`. The browser form and the server
 
 ## Chapter II: The Common Room
 
-A second, dark-academia chapter at `/#/common-room`, with a chapter list at `/#/chapters`. The first chapter stays
-at `/`. Nothing links to the chapter list yet, so add a link wherever it should be reached from, for example
-`<a href="#/chapters">`.
+A second, dark-academia chapter at `/#/common-room`. The site opens on the dog-themed chapter list at `/#/chapters`
+(any unknown address redirects there), and the first chapter lives at `/#/little-things`.
 
 - **Questions and copy:** `shared/commonRoom.ts`. Each question has a stable `id` (this is what is stored, so never
   rename or reuse one), its text, and an optional follow-up for "A Little More Magic". Follow-ups are only shown,
@@ -45,14 +44,22 @@ at `/`. Nothing links to the chapter list yet, so add a link wherever it should 
   The key lives in the browser, so clearing site data, or using another browser, means the answers can no longer be
   opened from the page, though they stay in the database.
 - **The villain:** after question 2 (`VILLAIN_AFTER_QUESTION` in `shared/commonRoom.ts`, named by question id)
-  Voldemort, drawn from scratch in `DarkLord.tsx`, blocks the way. A wand rises into view and one drag of it onto him
-  casts the spell that defeats him; he then says his last words in a chat box. Any move to a later question meets him
-  first, once per visit (remembered in `sessionStorage`, so a refresh does not repeat it). The same single motion also
+  Voldemort, drawn from scratch in `DarkLord.tsx`, blocks the way. He has five points of health (`HEALTH` in
+  `VillainDuel.tsx`), shown as a bar. A wand rises into view; each drag of it onto him lands a different spell and
+  takes one point, the wand returns, and he sways side to side (faster as he weakens) so she has to follow him. The
+  fifth spell defeats him and he says his last words in a chat box. Any move to a later question meets him
+  first, every time the chapter is opened. The same single motion also
   works as one flick of the phone (`src/hooks/useWand.ts`: a push over 11 m/s² or a spin over 260°/s, both easy to
   retune), as a press of Enter on the wand, or as the "Cast the spell with a tap instead" button, so the chapter can
   always be finished. iPhones need a tap and a permission prompt before they share motion, and motion only works on
   https (or localhost).
-- **The return:** after the last question he comes back (once per visit), seen from the viewer's own eyes: he charges a
+- **Quidditch:** after question 7 (`SNITCH_AFTER_QUESTION`) a Golden Snitch darts around and must be tapped
+  `SNITCH_TARGET` (10) times (`SnitchGame.tsx`). On the last catch Raven's hand closes on it too, he turns to look at her,
+  `hand.mp3` starts, and they talk (`COMMON_ROOM_COPY.snitch`). The scene music stays until she leaves the chapter.
+- **Saving:** nothing is sent while she answers. Everything typed is kept in the open page and sent together as soon
+  as the last scene is over; the thank-you screen shows "saved" only after the server confirmed every answer, and
+  offers a retry if it did not. Leaving before the end saves nothing.
+- **The return:** after the last question he comes back, seen from the viewer's own eyes: he charges a
   spell, throws it at the screen, time freezes, and a stick figure named Raven steps in, blocks it, and asks if she is
   okay. The scene is `ReturnScene.tsx`, and the stages and their timings are the `SCHEDULE` at the top of that file.
   Every line of dialogue (his, Raven's, and her two replies) is in `COMMON_ROOM_COPY` in `shared/commonRoom.ts`. Her
