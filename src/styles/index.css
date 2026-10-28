@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './common-room.css';
 
 @theme {
   --font-serif: 'Fraunces', Georgia, serif;
@@ -17,6 +18,20 @@
   --color-lilac: #8a7ba3;
   --color-dusk: #7a8fae;
   --color-ivory-ink: #8c8279;
+
+  /* Chapter II, The Common Room */
+  --font-display: 'IM Fell English', Georgia, serif;
+  --font-book: 'EB Garamond', Georgia, serif;
+  --color-parchment: #ead8ad;
+  --color-parchment-deep: #d6bb83;
+  --color-leather: #3a2616;
+  --color-leather-soft: #6b4e30;
+  --color-burgundy: #6e1f2c;
+  --color-burgundy-deep: #531520;
+  --color-forest: #234a35;
+  --color-gold: #c19a4b;
+  --color-gold-soft: #e0c382;
+  --color-wood: #1b110b;
 }
 
 body {

@@ -26,3 +26,37 @@ A single page with a short questionnaire. Her answers are saved to MongoDB Atlas
 ## Editing the questions
 
 All questions live in `shared/questionnaire.ts`. The browser form and the server validation both read from it.
+
+## Chapter II: The Common Room
+
+A second, dark-academia chapter at `/#/common-room`, with a chapter list at `/#/chapters`. The first chapter stays
+at `/`. Nothing links to the chapter list yet, so add a link wherever it should be reached from, for example
+`<a href="#/chapters">`.
+
+- **Questions and copy:** `shared/commonRoom.ts`. Each question has a stable `id` (this is what is stored, so never
+  rename or reuse one), its text, and an optional follow-up for "A Little More Magic". Follow-ups are only shown,
+  never stored. The server rejects any question id that is not in this list.
+- **Storage:** `common_room_answers`, one document per person and question, with a unique index on
+  `(ownerId, questionId)`. Editing updates that document and never makes a second one. It is kept apart from the
+  Chapter I `responses` collection.
+- **Who can see what:** each browser makes a random 256-bit secret key and keeps it in `localStorage`. Every request
+  to `api/common-room.ts` must send it, and the database stores only a SHA-256 hash of it. A visitor without the key
+  can read, change or delete nothing. The site owner reads answers in Atlas (`little_things.common_room_answers`).
+  The key lives in the browser, so clearing site data, or using another browser, means the answers can no longer be
+  opened from the page, though they stay in the database.
+- **The villain:** after question 2 (`VILLAIN_AFTER_QUESTION` in `shared/commonRoom.ts`, named by question id)
+  Voldemort, drawn from scratch in `DarkLord.tsx`, blocks the way. A wand rises into view and one drag of it onto him
+  casts the spell that defeats him; he then says his last words in a chat box. Any move to a later question meets him
+  first, once per visit (remembered in `sessionStorage`, so a refresh does not repeat it). The same single motion also
+  works as one flick of the phone (`src/hooks/useWand.ts`: a push over 11 m/s² or a spin over 260°/s, both easy to
+  retune), as a press of Enter on the wand, or as the "Cast the spell with a tap instead" button, so the chapter can
+  always be finished. iPhones need a tap and a permission prompt before they share motion, and motion only works on
+  https (or localhost).
+- **The return:** after the last question he comes back (once per visit), seen from the viewer's own eyes: he charges a
+  spell, throws it at the screen, time freezes, and a stick figure named Raven steps in, blocks it, and asks if she is
+  okay. The scene is `ReturnScene.tsx`, and the stages and their timings are the `SCHEDULE` at the top of that file.
+  Every line of dialogue (his, Raven's, and her two replies) is in `COMMON_ROOM_COPY` in `shared/commonRoom.ts`. Her
+  reply is not stored.
+- **What is never recorded:** which questions were opened or skipped. That is held only in the open page.
+- **Setup:** `npm run db:setup` also creates `common_room_answers` with its validation rules and index. The API
+  creates the index itself on first use too, so the chapter works even if setup was not run.

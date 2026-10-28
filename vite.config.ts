@@ -3,9 +3,10 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
-type ApiModule = { POST: (request: Request) => Promise<Response> }
+type Handler = (request: Request) => Promise<Response>
 
-// Runs api/responses.ts inside the dev server the same way Vercel runs it in production.
+// Runs the functions in api/ inside the dev server the same way Vercel runs them in production:
+// /api/<name> loads api/<name>.ts and calls its export named after the HTTP method.
 function devApi(): Plugin {
   return {
     name: 'dev-api',
@@ -13,15 +14,20 @@ function devApi(): Plugin {
     configureServer(server) {
       Object.assign(process.env, loadEnv(server.config.mode, process.cwd(), ''))
 
-      server.middlewares.use('/api/responses', async (req, res, next) => {
-        if (req.method !== 'POST') {
-          res.statusCode = 405
-          res.end()
-          return
-        }
+      server.middlewares.use('/api', async (req, res, next) => {
+        const url = new URL(req.originalUrl ?? req.url ?? '/', 'http://localhost')
+        const name = url.pathname.replace(/^\/api\//, '')
+        if (!/^[a-z-]+$/.test(name)) return next()
+
         try {
-          const { POST } = (await server.ssrLoadModule('/api/responses.ts')) as ApiModule
-          const response = await POST(await toRequest(req))
+          const module = (await server.ssrLoadModule(`/api/${name}.ts`)) as Record<string, Handler | undefined>
+          const handler = module[req.method ?? 'GET']
+          if (!handler) {
+            res.statusCode = 405
+            res.end()
+            return
+          }
+          const response = await handler(await toRequest(req, url))
           res.statusCode = response.status
           response.headers.forEach((value, key) => res.setHeader(key, value))
           res.end(Buffer.from(await response.arrayBuffer()))
@@ -33,14 +39,18 @@ function devApi(): Plugin {
   }
 }
 
-async function toRequest(req: IncomingMessage): Promise<Request> {
+async function toRequest(req: IncomingMessage, url: URL): Promise<Request> {
+  const method = req.method ?? 'GET'
+  const headers = new Headers()
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (typeof value === 'string') headers.set(key, value)
+  }
+
+  if (method === 'GET' || method === 'HEAD') return new Request(url, { method, headers })
+
   const chunks: Buffer[] = []
   for await (const chunk of req) chunks.push(chunk as Buffer)
-  return new Request(new URL(req.url ?? '/', 'http://localhost'), {
-    method: req.method,
-    headers: { 'content-type': req.headers['content-type'] ?? '' },
-    body: Buffer.concat(chunks),
-  })
+  return new Request(url, { method, headers, body: Buffer.concat(chunks) })
 }
 
 export default defineConfig({

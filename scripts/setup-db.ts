@@ -1,4 +1,6 @@
-import { closeDatabase, getDatabase, RESPONSES_COLLECTION } from '../server/db.js'
+import type { Db } from 'mongodb'
+import { closeDatabase, COMMON_ROOM_COLLECTION, COMMON_ROOM_INDEX, getDatabase, RESPONSES_COLLECTION } from '../server/db.js'
+import { ANSWER_LIMIT } from '../shared/commonRoom.js'
 import { LIMITS } from '../shared/questionnaire.js'
 
 // Structural rules only, so editing the questions never requires re-running this script.
@@ -29,18 +31,40 @@ const validator = {
   },
 }
 
+const commonRoomValidator = {
+  $jsonSchema: {
+    bsonType: 'object',
+    required: ['ownerId', 'questionId', 'answer', 'createdAt', 'updatedAt'],
+    additionalProperties: false,
+    properties: {
+      _id: { bsonType: 'objectId' },
+      ownerId: { bsonType: 'string', minLength: 64, maxLength: 64 },
+      questionId: { bsonType: 'string', minLength: 1, maxLength: 64 },
+      answer: { bsonType: 'string', minLength: 1, maxLength: ANSWER_LIMIT },
+      createdAt: { bsonType: 'date' },
+      updatedAt: { bsonType: 'date' },
+    },
+  },
+}
+
+async function ensureCollection(db: Db, name: string, schema: { $jsonSchema: object }) {
+  const [existing] = await db.listCollections({ name }).toArray()
+  if (existing) await db.command({ collMod: name, validator: schema, validationLevel: 'strict' })
+  else await db.createCollection(name, { validator: schema })
+}
+
 try {
   const db = await getDatabase()
-  const [existing] = await db.listCollections({ name: RESPONSES_COLLECTION }).toArray()
 
-  if (existing) {
-    await db.command({ collMod: RESPONSES_COLLECTION, validator, validationLevel: 'strict' })
-  } else {
-    await db.createCollection(RESPONSES_COLLECTION, { validator })
-  }
+  await ensureCollection(db, RESPONSES_COLLECTION, validator)
   await db.collection(RESPONSES_COLLECTION).createIndex({ createdAt: -1 })
 
-  console.log(`${db.databaseName}.${RESPONSES_COLLECTION} is ready (validation rules and index applied).`)
+  await ensureCollection(db, COMMON_ROOM_COLLECTION, commonRoomValidator)
+  await db.collection(COMMON_ROOM_COLLECTION).createIndex(COMMON_ROOM_INDEX, { unique: true })
+
+  console.log(
+    `${db.databaseName}: ${RESPONSES_COLLECTION} and ${COMMON_ROOM_COLLECTION} are ready (validation rules and indexes applied).`,
+  )
 } finally {
   await closeDatabase()
 }
