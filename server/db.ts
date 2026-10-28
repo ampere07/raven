@@ -12,6 +12,8 @@ export const RESPONSES_COLLECTION = 'responses'
 export type CommonRoomAnswerDocument = {
   ownerId: string
   questionId: string
+  /** The question's wording when it was answered, so the database reads on its own. Older rows may not have it. */
+  question?: string
   answer: string
   createdAt: Date
   updatedAt: Date

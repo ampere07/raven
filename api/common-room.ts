@@ -1,7 +1,13 @@
 import { createHash } from 'node:crypto'
 import { MongoServerError, type WithId } from 'mongodb'
 import { getCommonRoomAnswers, type CommonRoomAnswerDocument } from '../server/db.js'
-import { checkAnswerText, QUESTION_IDS, REQUEST_LIMIT, type StoredAnswer } from '../shared/commonRoom.js'
+import {
+  checkAnswerText,
+  COMMON_ROOM_QUESTIONS,
+  QUESTION_IDS,
+  REQUEST_LIMIT,
+  type StoredAnswer,
+} from '../shared/commonRoom.js'
 import { isRecord } from '../shared/validation.js'
 
 // Each browser holds a random secret key. Only a hash of it is stored, and every request must present the key, so
@@ -67,6 +73,9 @@ export async function PUT(request: Request): Promise<Response> {
   if (!checked.ok) return json({ error: checked.error }, 400)
 
   const { questionId } = payload
+  // The wording comes from the server's own list, never from the request, and is refreshed on every save.
+  const question = COMMON_ROOM_QUESTIONS.find((candidate) => candidate.id === questionId)?.text
+  if (!question) return json({ error: 'Walang ganyang tanong.' }, 400)
 
   // One document per person and question: an existing answer is updated in place, never duplicated.
   const write = async () => {
@@ -74,7 +83,7 @@ export async function PUT(request: Request): Promise<Response> {
     const now = new Date()
     return answers.findOneAndUpdate(
       { ownerId, questionId },
-      { $set: { answer: checked.answer, updatedAt: now }, $setOnInsert: { createdAt: now } },
+      { $set: { question, answer: checked.answer, updatedAt: now }, $setOnInsert: { createdAt: now } },
       { upsert: true, returnDocument: 'after' },
     )
   }
