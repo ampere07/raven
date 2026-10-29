@@ -6,6 +6,7 @@ import { MusicPlayer } from './components/MusicPlayer'
 import { PetalRain } from './components/PetalRain'
 import { ChapterListPage } from './pages/ChapterListPage'
 import { CommonRoomPage } from './pages/CommonRoomPage'
+import { HighSeasPage } from './pages/HighSeasPage'
 import './styles/index.css'
 import { useRoute } from './utils/route'
 
@@ -23,6 +24,7 @@ function Root() {
       )}
       {route === 'chapters' && <ChapterListPage />}
       {route === 'common-room' && <CommonRoomPage />}
+      {route === 'high-seas' && <HighSeasPage />}
       <MusicPlayer route={route} />
       <ExitGuard />
     </>

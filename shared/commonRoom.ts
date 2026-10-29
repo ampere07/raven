@@ -5,7 +5,7 @@ export type CommonRoomQuestion = {
   id: string
   text: string
   /** One gentle, optional follow-up shown under "A Little More Magic". It is never stored. */
-  followUp: string
+  followUp?: string
 }
 
 // Everything the chapter says in its own voice lives here, so it can be edited in one place.
@@ -78,7 +78,11 @@ export const COMMON_ROOM_COPY = {
 
 export type FinaleBeat = {
   say: string
-  choices?: readonly { label: string; answer: string }[]
+  /** The line is the punchline: it is shown bigger. */
+  punch?: boolean
+  /** A reaction GIF shown with this line (a key of the reaction list), unless a choice brings its own. */
+  gif?: string
+  choices?: readonly { label: string; answer: string; gif?: string }[]
 }
 
 export const COMMON_ROOM_QUESTIONS: readonly CommonRoomQuestion[] = [

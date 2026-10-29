@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { COMMON_ROOM_COPY } from '../../shared/commonRoom'
+import { HIGH_SEAS_COPY } from '../../shared/highSeas'
 import { Paw, Pup } from '../components/dog/Pup'
 import { hrefFor } from '../utils/route'
 
@@ -16,6 +17,12 @@ const CHAPTERS = [
     title: COMMON_ROOM_COPY.title,
     blurb: 'Hobbies, humor, at yung mga maliliit na bagay na gusto mo.',
     href: hrefFor('common-room'),
+  },
+  {
+    number: HIGH_SEAS_COPY.number,
+    title: HIGH_SEAS_COPY.title,
+    blurb: 'Barko, kayamanan, at isang kontrabida mula sa ilalim ng dagat.',
+    href: hrefFor('high-seas'),
   },
 ] as const
 

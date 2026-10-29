@@ -7,7 +7,7 @@ const SKIN = '#f2cfa6'
 // solid body: a shirt with a belt, trousers, shoes, a neck and a head with hair. Its name hangs above its head.
 // `guard` has a wand raised against an attack and a hand held up in front; `ask` turns to face the viewer, smiling,
 // with an open hand held out.
-export function Stickman({ name, pose }: { name: string; pose: Pose }) {
+export function Stickman({ name, pose, hat = false }: { name: string; pose: Pose; hat?: boolean }) {
   const guard = pose === 'guard'
 
   return (
@@ -73,6 +73,13 @@ export function Stickman({ name, pose }: { name: string; pose: Pose }) {
           </>
         ) : (
           <path d="M174 338 Q180 343 186 338" fill="none" stroke="#2a1a10" strokeWidth="2" />
+        )}
+        {hat && (
+          <g>
+            <path d="M158 322 C166 306 194 306 202 322 C192 318 168 318 158 322 Z" fill="#1a1d26" stroke="#d9b25c" strokeWidth="1.6" />
+            <path d="M166 318 C168 302 192 302 194 318 Z" fill="#232733" stroke="#d9b25c" strokeWidth="1.4" />
+            <circle cx="180" cy="308" r="2.6" fill="#d9b25c" />
+          </g>
         )}
       </g>
 

@@ -1,6 +1,7 @@
 import type { Db } from 'mongodb'
 import { closeDatabase, COMMON_ROOM_COLLECTION, COMMON_ROOM_INDEX, getDatabase, RESPONSES_COLLECTION } from '../server/db.js'
 import { ANSWER_LIMIT, COMMON_ROOM_QUESTIONS } from '../shared/commonRoom.js'
+import { HIGH_SEAS_QUESTIONS } from '../shared/highSeas.js'
 import { LIMITS } from '../shared/questionnaire.js'
 
 // Structural rules only, so editing the questions never requires re-running this script.
@@ -66,7 +67,7 @@ try {
   // Answers saved before the question text was stored get it now. Only rows without it are touched, nothing is
   // removed, and no answer is changed.
   let added = 0
-  for (const { id, text } of COMMON_ROOM_QUESTIONS) {
+  for (const { id, text } of [...COMMON_ROOM_QUESTIONS, ...HIGH_SEAS_QUESTIONS]) {
     const result = await db
       .collection(COMMON_ROOM_COLLECTION)
       .updateMany({ questionId: id, question: { $exists: false } }, { $set: { question: text } })

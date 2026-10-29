@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 
-export type Route = 'chapters' | 'little-things' | 'common-room'
+export type Route = 'chapters' | 'little-things' | 'common-room' | 'high-seas'
 
 const PATHS: Record<Route, string> = {
   chapters: '#/chapters',
   'little-things': '#/little-things',
   'common-room': '#/common-room',
+  'high-seas': '#/high-seas',
 }
 
 const DEFAULT_ROUTE: Route = 'chapters'

@@ -1,12 +1,12 @@
-import { ArrowRight } from 'lucide-react'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { COMMON_ROOM_COPY, type FinaleBeat } from '../../../shared/commonRoom'
 import handTheme from '../../hand.mp3'
 import { setSceneTrack } from '../../utils/sceneMusic'
 import { DarkLord } from './DarkLord'
 import { SpeechBubble } from './SpeechBubble'
 import { Stickman } from './Stickman'
-import { primaryButton, textButton } from './ui'
+import { FinaleTalk } from './FinaleTalk'
+import { textButton } from './ui'
 
 type Phase = 'appear' | 'charge' | 'throw' | 'pause' | 'save' | 'ask'
 
@@ -19,13 +19,28 @@ const SCHEDULE: readonly (readonly [Phase, number])[] = [
   ['ask', 10400],
 ]
 
-const NARRATION: Record<Phase, string> = {
-  appear: `Bumalik si ${COMMON_ROOM_COPY.villainName}.`,
+const narrationFor = (villainName: string, heroName: string): Record<Phase, string> => ({
+  appear: `Bumalik si ${villainName}.`,
   charge: 'Nagcha-charge siya ng malakas na spell.',
   throw: 'Binato niya ’to diretso sa’yo!',
   pause: 'Parang huminto yung oras.',
-  save: `Si ${COMMON_ROOM_COPY.finale.heroName}, isang stick figure, tumalon sa harap mo at hinarang yung spell.`,
-  ask: `Humarap sa’yo si ${COMMON_ROOM_COPY.finale.heroName}.`,
+  save: `Si ${heroName}, isang stick figure, tumalon sa harap mo at hinarang yung spell.`,
+  ask: `Humarap sa’yo si ${heroName}.`,
+})
+
+// Who is in the scene and what they say. Chapter II's is the default; another chapter can bring its own.
+export type ReturnCopy = {
+  villainName: string
+  villainLine: string
+  heroName: string
+  conversation: readonly FinaleBeat[]
+}
+
+const DEFAULT_COPY: ReturnCopy = {
+  villainName: COMMON_ROOM_COPY.villainName,
+  villainLine: COMMON_ROOM_COPY.finale.villainLine,
+  heroName: COMMON_ROOM_COPY.finale.heroName,
+  conversation: COMMON_ROOM_COPY.finale.conversation as readonly FinaleBeat[],
 }
 
 const TIP = { x: 225, y: 78 } as const
@@ -40,15 +55,21 @@ const BURST = Array.from({ length: 14 }, (_, i) => {
 
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
-type Props = { onFinished: () => void }
+type Props = {
+  onFinished: () => void
+  copy?: ReturnCopy
+  /** The villain's art, drawn in the scene's own 360 x 480 space. */
+  villain?: ReactNode
+  /** Puts a pirate hat on the hero. */
+  hat?: boolean
+}
 
 // Seen from the viewer's own eyes. The spell is thrown at the screen, everything freezes, and a stick figure steps in
 // front to take it. Nothing here is stored.
-export function ReturnScene({ onFinished }: Props) {
+export function ReturnScene({ onFinished, copy = DEFAULT_COPY, villain: villainArt, hat }: Props) {
+  const NARRATION = narrationFor(copy.villainName, copy.heroName)
   const [phase, setPhase] = useState<Phase>('appear')
   const [shown, setShown] = useState(false)
-  const [beat, setBeat] = useState(0)
-  const [picked, setPicked] = useState<number | null>(null)
   const calm = prefersReducedMotion()
 
   useEffect(() => {
@@ -93,21 +114,10 @@ export function ReturnScene({ onFinished }: Props) {
       : { transform: 'translate(-260px, 0px)' }
 
   const rumbling = phase === 'charge' || phase === 'throw'
-  const talk = COMMON_ROOM_COPY.finale.conversation as readonly FinaleBeat[]
-  const current = talk[beat]
-  const chosen = picked !== null ? current.choices?.[picked] : undefined
-  const lastBeat = beat === talk.length - 1
-  const waitingForChoice = Boolean(current.choices) && picked === null
-  const advance = () => {
-    if (lastBeat) return onFinished()
-    setBeat(beat + 1)
-    setPicked(null)
-  }
-
   return (
     <section aria-labelledby="finale-title" className="cr-parchment cr-unfurl px-5 py-8 text-center sm:px-10 sm:py-12">
       <h2 id="finale-title" className="sr-only">
-        Bumalik si {COMMON_ROOM_COPY.villainName}
+        Bumalik si {copy.villainName}
       </h2>
       <p className="sr-only" role="status" aria-live="polite">
         {NARRATION[phase]}
@@ -151,7 +161,7 @@ export function ReturnScene({ onFinished }: Props) {
             </g>
 
             <g style={{ ...villain, transformOrigin: '180px 90px' }}>
-              <DarkLord x="130" y="26" width="100" height="112" />
+              {villainArt ?? <DarkLord x="130" y="26" width="100" height="112" />}
             </g>
 
             {phase === 'charge' &&
@@ -207,7 +217,7 @@ export function ReturnScene({ onFinished }: Props) {
             )}
 
             <g style={hero}>
-              <Stickman name={COMMON_ROOM_COPY.finale.heroName} pose={phase === 'ask' ? 'ask' : 'guard'} />
+              <Stickman name={copy.heroName} pose={phase === 'ask' ? 'ask' : 'guard'} hat={hat} />
             </g>
           </svg>
         </div>
@@ -224,47 +234,18 @@ export function ReturnScene({ onFinished }: Props) {
 
         {phase === 'appear' && (
           <SpeechBubble
-            name={COMMON_ROOM_COPY.villainName}
+            name={copy.villainName}
             accent="text-red-300"
             tail="up"
             className="cr-fade absolute left-1/2 top-[33%] w-[82%] -translate-x-1/2"
             style={{ animationDelay: '1.3s' }}
           >
-            {COMMON_ROOM_COPY.finale.villainLine}
+            {copy.villainLine}
           </SpeechBubble>
         )}
       </div>
 
-      {phase === 'ask' && (
-        <div className="mt-6 flex flex-col items-center gap-3">
-          {chosen && (
-            <p key={`you-${beat}`} className="cr-fade font-book text-lg italic text-leather-soft">
-              Ikaw: “{chosen.label}”
-            </p>
-          )}
-          <SpeechBubble
-            key={`${beat}-${picked}`}
-            name={COMMON_ROOM_COPY.finale.heroName}
-            className="cr-fade w-full max-w-xs"
-          >
-            {chosen ? chosen.answer : current.say}
-          </SpeechBubble>
-
-          {waitingForChoice ? (
-            <div className="cr-fade flex flex-wrap justify-center gap-3">
-              {current.choices?.map((option, index) => (
-                <button key={option.label} type="button" onClick={() => setPicked(index)} className={primaryButton}>
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <button type="button" onClick={advance} className={`${primaryButton} cr-fade !px-8`} autoFocus>
-              {lastBeat ? 'Tuloy' : 'Susunod'} <ArrowRight aria-hidden size={16} />
-            </button>
-          )}
-        </div>
-      )}
+      {phase === 'ask' && <FinaleTalk heroName={copy.heroName} conversation={copy.conversation} onFinished={onFinished} />}
 
       <div className="mt-4 flex justify-center">
         <button type="button" onClick={onFinished} className={textButton}>

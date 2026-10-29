@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import './common-room.css';
 @import './dog.css';
+@import './pirate.css';
 
 @theme {
   --font-serif: 'Fraunces', Georgia, serif;

@@ -9,19 +9,22 @@ export type SaveState = { status: 'saving' } | { status: 'saved' } | { status: '
 type Props = {
   save: SaveState
   onRetry: () => void
+  /** Defaults to Chapter II's words. */
+  title?: string
+  subtitle?: string
 }
 
 // Shown after the last scene. Every answer is sent together while this is on screen, and "saved" is only ever
 // shown once the server has confirmed all of them.
-export function ChapterCompletion({ save, onRetry }: Props) {
+export function ChapterCompletion({ save, onRetry, title = COMMON_ROOM_COPY.completeTitle, subtitle = COMMON_ROOM_COPY.completeSubtitle }: Props) {
   return (
     <section aria-labelledby="complete-title" className="cr-parchment cr-unfurl px-6 py-10 text-center sm:px-12 sm:py-14">
       <Flourish className="mx-auto w-40 text-gold" />
       <h2 id="complete-title" className="mt-5 font-display text-3xl leading-tight text-burgundy sm:text-4xl">
-        {COMMON_ROOM_COPY.completeTitle}
+        {title}
       </h2>
       <p className="mx-auto mt-4 max-w-md font-display text-xl italic leading-snug text-leather-soft">
-        {COMMON_ROOM_COPY.completeSubtitle}
+        {subtitle}
       </p>
 
       <div aria-live="polite" className="mx-auto mt-7 min-h-7 max-w-sm font-book text-lg">

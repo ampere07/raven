@@ -4,11 +4,15 @@ import { getCommonRoomAnswers, type CommonRoomAnswerDocument } from '../server/d
 import {
   checkAnswerText,
   COMMON_ROOM_QUESTIONS,
-  QUESTION_IDS,
   REQUEST_LIMIT,
   type StoredAnswer,
 } from '../shared/commonRoom.js'
+import { HIGH_SEAS_QUESTIONS } from '../shared/highSeas.js'
 import { isRecord } from '../shared/validation.js'
+
+// Chapter II and Chapter III share this collection; their question ids never overlap.
+const KNOWN_QUESTIONS = [...COMMON_ROOM_QUESTIONS, ...HIGH_SEAS_QUESTIONS]
+const KNOWN_IDS: ReadonlySet<string> = new Set(KNOWN_QUESTIONS.map((question) => question.id))
 
 // Each browser holds a random secret key. Only a hash of it is stored, and every request must present the key, so
 // a visitor can reach nothing but their own answers. Without a key (or with the wrong one) nothing is returned.
@@ -66,7 +70,7 @@ export async function PUT(request: Request): Promise<Response> {
   } catch {
     return json({ error: 'Hindi mabasa yung sagot.' }, 400)
   }
-  if (!isRecord(payload) || typeof payload.questionId !== 'string' || !QUESTION_IDS.has(payload.questionId)) {
+  if (!isRecord(payload) || typeof payload.questionId !== 'string' || !KNOWN_IDS.has(payload.questionId)) {
     return json({ error: 'Walang ganyang tanong.' }, 400)
   }
   const checked = checkAnswerText(payload.answer)
@@ -74,7 +78,7 @@ export async function PUT(request: Request): Promise<Response> {
 
   const { questionId } = payload
   // The wording comes from the server's own list, never from the request, and is refreshed on every save.
-  const question = COMMON_ROOM_QUESTIONS.find((candidate) => candidate.id === questionId)?.text
+  const question = KNOWN_QUESTIONS.find((candidate) => candidate.id === questionId)?.text
   if (!question) return json({ error: 'Walang ganyang tanong.' }, 400)
 
   // One document per person and question: an existing answer is updated in place, never duplicated.
@@ -109,7 +113,7 @@ export async function DELETE(request: Request): Promise<Response> {
   if (!ownerId) return denied()
 
   const questionId = new URL(request.url).searchParams.get('questionId')
-  if (!questionId || !QUESTION_IDS.has(questionId)) return json({ error: 'Walang ganyang tanong.' }, 400)
+  if (!questionId || !KNOWN_IDS.has(questionId)) return json({ error: 'Walang ganyang tanong.' }, 400)
 
   try {
     const answers = await getCommonRoomAnswers()

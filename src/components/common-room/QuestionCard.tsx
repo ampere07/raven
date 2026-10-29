@@ -8,6 +8,8 @@ type Props = {
   question: CommonRoomQuestion
   number: number
   total: number
+  /** The line above the question, like "Chapter II: The Common Room". Defaults to Chapter II's. */
+  chapterLabel?: string
   draft: string
   direction: 'forward' | 'back'
   canGoBack: boolean
@@ -20,6 +22,7 @@ type Props = {
 // Nothing is saved here: the answers are kept in the open page and sent together at the very end.
 export function QuestionCard(props: Props) {
   const { question, number, total, draft, direction, canGoBack } = props
+  const chapterLabel = props.chapterLabel ?? `Chapter ${COMMON_ROOM_COPY.number}: ${COMMON_ROOM_COPY.title}`
   const heading = useRef<HTMLHeadingElement>(null)
   const fieldId = useId()
 
@@ -37,7 +40,7 @@ export function QuestionCard(props: Props) {
         }`}
       >
         <p className="font-display text-base tracking-wide text-burgundy/90">
-          Chapter {COMMON_ROOM_COPY.number}: {COMMON_ROOM_COPY.title}
+          {chapterLabel}
         </p>
         <p className="mt-1 font-book text-lg italic text-leather-soft">
           Tanong {number} sa {total}.
@@ -68,7 +71,7 @@ export function QuestionCard(props: Props) {
           {draft.length} / {ANSWER_LIMIT}
         </p>
 
-        <FollowUpPrompt key={question.id} prompt={question.followUp} />
+        {question.followUp && <FollowUpPrompt key={question.id} prompt={question.followUp} />}
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-leather/25 pt-5">
           <div>

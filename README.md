@@ -67,3 +67,25 @@ A second, dark-academia chapter at `/#/common-room`. The site opens on the dog-t
 - **What is never recorded:** which questions were opened or skipped. That is held only in the open page.
 - **Setup:** `npm run db:setup` also creates `common_room_answers` with its validation rules and index. The API
   creates the index itself on first use too, so the chapter works even if setup was not run.
+
+## Chapter III: The High Seas
+
+A pirate chapter at `/#/high-seas`, built the same way as Chapter II and sharing its `common_room_answers`
+collection (every question id starts with `sea-`, so ids never clash).
+
+- **Copy and questions:** `shared/highSeas.ts`: the 11 questions, the cannon fight's words, and Raven's final
+  conversation. The last beat is the punchline ("Sinundan kita hanggang sa ibang theme.").
+- **Davy Jones:** after question 4 (`CANNON_AFTER_QUESTION`) a cannon fight (`CannonDuel.tsx`). Tapping the water fires
+  a ball at that spot and it hits only if he is still there; five hits sink him. The "Fire!" button always hits. The
+  art (`DavyJones.tsx`) is original.
+- **The maze and the jail:** after the last question, a new 20 by 20 maze (`MazeTrap.tsx`, different every time) walked
+  with four arrow buttons or the arrow keys. Reaching its end springs Davy Jones's trap (`JailEscape.tsx`): she is in a
+  cell, Raven comes to the bars (`hand.mp3` plays), breaks the lock, and they leave in a small boat. Then they talk
+  (`FinaleTalk.tsx`, shared with Chapter II). "Skip na lang 'to" skips ahead at each step.
+- **Every page is a scroll:** `SeaScroll.tsx` and `pirate.css` draw the pirate scroll that opens when a page appears.
+- **Reaction GIFs:** `ReactionGif.tsx` shows Pirates of the Caribbean GIFs hosted by GIPHY (not copied into the project).
+  A line picks one by key (`gif: 'regret'`). If one cannot load, it is simply not shown.
+- **Jack the monkey:** `JackMonkey.tsx` is an original cartoon capuchin who runs a lap of every Chapter III page: along
+  the floor, up the right wall, hanging from the scroll's top rod, down the left wall, along its bottom rod, and back.
+- **Music:** `chapter3.mp3` plays throughout, except for `hand.mp3` once Raven appears at the cell.
+- **Saving:** the same rule as Chapter II: all answers are saved together after the final scene.

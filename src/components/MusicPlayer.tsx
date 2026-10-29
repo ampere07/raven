@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import chapterTwoTheme from '../chapter2.mp3'
+import chapterThreeTheme from '../chapter3.mp3'
 import chapterOneSong from '../song.mp3'
 import type { Route } from '../utils/route'
 import { useSceneTrack } from '../utils/sceneMusic'
@@ -11,6 +12,7 @@ const TRACKS: Record<Route, string> = {
   chapters: chapterOneSong,
   'little-things': chapterOneSong,
   'common-room': chapterTwoTheme,
+  'high-seas': chapterThreeTheme,
 }
 
 // Browsers refuse to play sound before the visitor has touched the page, so if playing on load is blocked
